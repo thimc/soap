@@ -1,38 +1,44 @@
 # soap - simple xdg-open replacement with fallback
 
-include config.mk
+BACKUP = xdg-open.sh
+
+# install location
+PREFIX = /usr/local
+XDG_BACKUP = ${PREFIX}/bin/xdg-open.sh
+
+# compiler and linker
+CC = cc
+CFLAGS = -pedantic -Wall -Wextra -O2 ${INCS}\
+		 -DFALLBACK=\"${XDG_BACKUP}\ \%s\"
+LDFLAGS = -s
 
 SRC = soap.c
 OBJ = ${SRC:.c=.o}
 
-all: options soap
 
-options:
-	@echo soap build options:
-	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "LDFLAGS  = ${LDFLAGS}"
-	@echo "CC       = ${CC}"
+all: soap
 
 .c.o:
-	@echo CC $<
-	@${CC} -c ${CFLAGS} $<
+	${CC} -c ${CFLAGS} $<
 
-${OBJ}: config.mk
+${OBJ}: config.h
+
+config.h:
+	cp config.def.h $@
 
 soap: ${OBJ}
-	@echo CC -o $@
-	@${CC} -o $@ ${OBJ} ${LDFLAGS}
+	${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
-	@echo cleaning
-	@rm -f soap ${OBJ}
+	rm -f soap ${OBJ}
 
 install: all
-	@test -f /usr/bin/xdg-open_ || (echo backing up to /usr/bin/xdg-open_; mv /usr/bin/xdg-open /usr/bin/xdg-open_)
-	@echo installing new xdg-open
-	@cp -f soap /usr/bin/xdg-open
-	@chmod 755 /usr/bin/xdg-open
+	install -Dm755 soap ${PREFIX}/bin
+	@test ! -f ${XDG_BACKUP} || (echo error: backup exists!; return 1)
+	mv ${PREFIX}/bin/xdg-open ${XDG_BACKUP}
+	ln -sf ${PREFIX}/bin/soap ${PREFIX}/bin/xdg-open
 
 uninstall:
-	@echo moving xdg-open_ back into place
-	@(test -f /usr/bin/xdg-open_ && mv /usr/bin/xdg-open_ /usr/bin/xdg-open) || echo ERROR: xdg-open_ does not exist
+	@test -f ${XDG_BACKUP} || (echo error: no backup found!; return 1)
+	rm -f ${PREFIX}/bin/soap
+	mv ${XDG_BACKUP} ${PREFIX}/bin/xdg-open

@@ -1,9 +1,17 @@
 /* See LICENSE file for copyright and license details. */
 
+/* special commands */
+static const char *dircmd = "xterm -e lf %s";
+
 static const Pair pairs[] = {
-	/* regex                  action */
-	{ "\.(jpg|png|tiff)$",    "feh %s"        },
-	{ "\.gif$",               "wget -O /tmp/tmp_gifview.gif %s && gifview -a /tmp/tmp_gifview.gif" },
-	{ "\.mp3$",               "st -e mplayer %s" },
-	{ "^(http://|https://)?(www\.)?(youtube.com/watch\?|youtu\.be/)", "youtube-viewer %s" }
+	/*  regex                                           action */
+	{ "\\.pdf$",                                        "zathura %s" },
+	{ "\\.(jpg|jpeg|png|tiff|gif|bmp)$",                "sxiv -a %s" },
+	{ "\\.(avi|mp4|m4v|mkv|mp3|ogg|flac|mov|wav|wmv)$", "mpv %s" },
+	{ "\\.(html|svg)$",                                 "firefox %s" },
+	{ "^(http://|https://)?(www\\.)?(youtube\\.com/watch\?|youtu\\.be/)", "mpv %s" },
+	{ "^(http|https)://",                               "firefox %s" },
+	{ "(^magnet:\?|\\.torrent$)",                       "torrentadd %s" },
+	{ "^mailto:\?",                                     "xterm -e mutt %s" },
+	{ ".",                                              "xterm -e nvim %s" },
 };
